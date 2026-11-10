@@ -1,11 +1,11 @@
-import { Navigate, useLocation } from "react-router-dom";
+import { Link, Navigate, useLocation } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 
 /**
- * Restricts access to authenticated users, preserving the requested route on redirect.
+ * Restricts access to authenticated users and optionally checks user role permissions.
  */
-export default function ProtectedRoute({ children }) {
-  const { isAuthenticated, authLoading } = useAuth();
+export default function ProtectedRoute({ children, allowedRoles }) {
+  const { isAuthenticated, authLoading, user } = useAuth();
   const location = useLocation();
 
   if (authLoading) {
@@ -21,6 +21,30 @@ export default function ProtectedRoute({ children }) {
     return <Navigate to="/login" state={{ from: location }} replace />;
   }
 
+  if (
+    Array.isArray(allowedRoles) &&
+    allowedRoles.length > 0 &&
+    !allowedRoles.includes(user?.role)
+  ) {
+    return (
+      <section className="state-box" role="alert">
+        <span className="status-code-badge">403</span>
+        <h2>Admin Access Required</h2>
+        <p>
+          You are signed in as <strong>{user?.email}</strong>, which does not
+          have administrator permissions to manage events.
+        </p>
+        <div className="state-actions">
+          <Link to="/" className="btn btn-primary">
+            Back to Events
+          </Link>
+          <Link to="/my-bookings" className="btn btn-secondary">
+            My Bookings
+          </Link>
+        </div>
+      </section>
+    );
+  }
+
   return children;
 }
-

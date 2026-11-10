@@ -18,3 +18,17 @@ export const fetchEventById = async (eventId) => {
   return data.event;
 };
 
+export const createEvent = async (payload) => {
+  const { data } = await api.post("/events", payload);
+  return data.event;
+};
+
+export const updateEvent = async (eventId, payload) => {
+  const { data } = await api.put(`/events/${eventId}`, payload);
+  return data.event;
+};
+
+export const deleteEvent = async (eventId) => {
+  const { data } = await api.delete(`/events/${eventId}`);
+  return data;
+};

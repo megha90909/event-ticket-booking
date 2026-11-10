@@ -19,6 +19,7 @@ export default function EventDetails() {
   const [event, setEvent] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [errorStatus, setErrorStatus] = useState(null);
   const [imageError, setImageError] = useState(false);
 
   const [quantity, setQuantity] = useState(1);
@@ -29,11 +30,13 @@ export default function EventDetails() {
   const loadEvent = useCallback(async () => {
     setLoading(true);
     setError("");
+    setErrorStatus(null);
     try {
       const fetched = await fetchEventById(id);
       setEvent(fetched);
       setImageError(false);
     } catch (err) {
+      setErrorStatus(err?.response?.status ?? null);
       setError(getErrorMessage(err, "Unable to load event details."));
     } finally {
       setLoading(false);
@@ -57,12 +60,26 @@ export default function EventDetails() {
   }
 
   if (error || !event) {
+    const isNotFound = errorStatus === 404 || errorStatus === 400;
     return (
-      <div className="state-box">
+      <div className="state-box" role="alert">
+        {isNotFound && <span className="status-code-badge">404</span>}
+        <h2>{isNotFound ? "Event Not Found" : "Unable to Load Event"}</h2>
         <div className="alert alert-error">{error || "Event not found."}</div>
-        <Link to="/" className="btn btn-secondary">
-          Back to Events
-        </Link>
+        <div className="state-actions">
+          {!isNotFound && (
+            <button
+              type="button"
+              className="btn btn-primary"
+              onClick={loadEvent}
+            >
+              Try Again
+            </button>
+          )}
+          <Link to="/" className="btn btn-secondary">
+            Back to Events
+          </Link>
+        </div>
       </div>
     );
   }

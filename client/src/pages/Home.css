@@ -89,5 +89,16 @@
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
   gap: 1.35rem;
+  transition: opacity 0.15s ease;
+}
+
+.events-grid.is-refreshing {
+  opacity: 0.65;
+}
+
+.home-refreshing {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--primary);
 }
 

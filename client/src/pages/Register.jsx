@@ -1,11 +1,12 @@
 import { useState } from "react";
 import { Link, Navigate, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
-import { getErrorMessage } from "../utils/format";
+import { getErrorMessage, isValidEmail } from "../utils/format";
 import "./Auth.css";
 
 export default function Register() {
-  const { isAuthenticated, authLoading, register } = useAuth();
+  const { isAuthenticated, authLoading, clearSessionMessage, register } =
+    useAuth();
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -17,16 +18,34 @@ export default function Register() {
 
   const redirectTo = location.state?.from?.pathname || "/";
 
-  if (!authLoading && isAuthenticated) {
+  if (authLoading) {
+    return (
+      <div className="state-box" role="status" aria-live="polite">
+        <div className="spinner" aria-hidden="true" />
+        <p>Checking your session...</p>
+      </div>
+    );
+  }
+
+  if (isAuthenticated) {
     return <Navigate to={redirectTo} replace />;
   }
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
+    clearSessionMessage();
 
-    if (!name.trim() || !email.trim() || !password) {
+    const trimmedName = name.trim();
+    const trimmedEmail = email.trim();
+
+    if (!trimmedName || !trimmedEmail || !password) {
       setError("Please provide your name, email, and password.");
+      return;
+    }
+
+    if (!isValidEmail(trimmedEmail)) {
+      setError("Please enter a valid email address.");
       return;
     }
 
@@ -38,8 +57,8 @@ export default function Register() {
     setSubmitting(true);
     try {
       await register({
-        name: name.trim(),
-        email: email.trim(),
+        name: trimmedName,
+        email: trimmedEmail,
         password,
       });
       navigate(redirectTo, { replace: true });
@@ -76,7 +95,11 @@ export default function Register() {
               placeholder="Your full name"
               autoComplete="name"
               value={name}
-              onChange={(e) => setName(e.target.value)}
+              onChange={(e) => {
+                setName(e.target.value);
+                if (error) setError("");
+              }}
+              disabled={submitting}
               required
             />
           </div>
@@ -92,7 +115,11 @@ export default function Register() {
               placeholder="you@example.com"
               autoComplete="email"
               value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              onChange={(e) => {
+                setEmail(e.target.value);
+                if (error) setError("");
+              }}
+              disabled={submitting}
               required
             />
           </div>
@@ -109,7 +136,11 @@ export default function Register() {
               autoComplete="new-password"
               minLength={6}
               value={password}
-              onChange={(e) => setPassword(e.target.value)}
+              onChange={(e) => {
+                setPassword(e.target.value);
+                if (error) setError("");
+              }}
+              disabled={submitting}
               required
             />
             <span className="form-hint">Must be at least 6 characters.</span>
@@ -134,4 +165,3 @@ export default function Register() {
     </section>
   );
 }
-

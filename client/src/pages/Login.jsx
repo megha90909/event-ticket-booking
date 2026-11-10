@@ -1,11 +1,17 @@
 import { useState } from "react";
 import { Link, Navigate, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
-import { getErrorMessage } from "../utils/format";
+import { getErrorMessage, isValidEmail } from "../utils/format";
 import "./Auth.css";
 
 export default function Login() {
-  const { isAuthenticated, authLoading, login } = useAuth();
+  const {
+    isAuthenticated,
+    authLoading,
+    sessionMessage,
+    clearSessionMessage,
+    login,
+  } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -16,22 +22,38 @@ export default function Login() {
 
   const redirectTo = location.state?.from?.pathname || "/";
 
-  if (!authLoading && isAuthenticated) {
+  if (authLoading) {
+    return (
+      <div className="state-box" role="status" aria-live="polite">
+        <div className="spinner" aria-hidden="true" />
+        <p>Checking your session...</p>
+      </div>
+    );
+  }
+
+  if (isAuthenticated) {
     return <Navigate to={redirectTo} replace />;
   }
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
+    clearSessionMessage();
 
-    if (!email.trim() || !password) {
+    const trimmedEmail = email.trim();
+    if (!trimmedEmail || !password) {
       setError("Please enter both email and password.");
+      return;
+    }
+
+    if (!isValidEmail(trimmedEmail)) {
+      setError("Please enter a valid email address.");
       return;
     }
 
     setSubmitting(true);
     try {
-      await login({ email: email.trim(), password });
+      await login({ email: trimmedEmail, password });
       navigate(redirectTo, { replace: true });
     } catch (err) {
       setError(getErrorMessage(err, "Invalid email or password."));
@@ -47,6 +69,20 @@ export default function Login() {
           <h1>Welcome Back</h1>
           <p>Sign in to book tickets and manage your bookings.</p>
         </div>
+
+        {sessionMessage && !error && (
+          <div className="alert alert-warning alert-dismissible" role="status">
+            <span>{sessionMessage}</span>
+            <button
+              type="button"
+              className="alert-close"
+              onClick={clearSessionMessage}
+              aria-label="Dismiss notice"
+            >
+              &times;
+            </button>
+          </div>
+        )}
 
         {error && (
           <div className="alert alert-error" role="alert">
@@ -66,7 +102,11 @@ export default function Login() {
               placeholder="you@example.com"
               autoComplete="email"
               value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              onChange={(e) => {
+                setEmail(e.target.value);
+                if (error) setError("");
+              }}
+              disabled={submitting}
               required
             />
           </div>
@@ -82,7 +122,11 @@ export default function Login() {
               placeholder="Enter your password"
               autoComplete="current-password"
               value={password}
-              onChange={(e) => setPassword(e.target.value)}
+              onChange={(e) => {
+                setPassword(e.target.value);
+                if (error) setError("");
+              }}
+              disabled={submitting}
               required
             />
           </div>
@@ -106,4 +150,3 @@ export default function Login() {
     </section>
   );
 }
-

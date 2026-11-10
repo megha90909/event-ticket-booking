@@ -89,16 +89,30 @@
 }
 
 .navbar-user-name {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
   font-size: 0.875rem;
   font-weight: 600;
   color: var(--text);
   background-color: var(--surface-muted);
   padding: 0.3rem 0.75rem;
   border-radius: 999px;
-  max-width: 160px;
+  max-width: 200px;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+.navbar-role-tag {
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--primary);
+  background-color: var(--primary-soft);
+  padding: 0.1rem 0.45rem;
+  border-radius: 999px;
 }
 
 @media (max-width: 680px) {

@@ -20,6 +20,8 @@ export default function Navbar() {
     navigate("/");
   };
 
+  const isAdmin = user?.role === "admin";
+
   return (
     <header className="navbar">
       <div className="navbar-inner">
@@ -62,9 +64,23 @@ export default function Navbar() {
                 My Bookings
               </NavLink>
 
+              {isAdmin && (
+                <NavLink
+                  to="/admin"
+                  className={({ isActive }) =>
+                    `nav-link ${isActive ? "is-active" : ""}`
+                  }
+                >
+                  Admin
+                </NavLink>
+              )}
+
               <div className="navbar-user-group">
                 <span className="navbar-user-name" title={user?.email}>
                   {user?.name}
+                  {isAdmin && (
+                    <span className="navbar-role-tag">Admin</span>
+                  )}
                 </span>
                 <button
                   type="button"
@@ -97,4 +113,3 @@ export default function Navbar() {
     </header>
   );
 }
-

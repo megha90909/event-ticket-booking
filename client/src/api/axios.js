@@ -5,6 +5,7 @@ const API_BASE_URL =
 
 const api = axios.create({
   baseURL: API_BASE_URL,
+  timeout: 45000,
   headers: {
     "Content-Type": "application/json",
   },
@@ -40,7 +41,12 @@ api.interceptors.response.use(
       requestUrl.includes("/auth/register");
 
     if (status === 401 && !isAuthAttempt && unauthorizedHandler) {
-      unauthorizedHandler();
+      const isInitialHydration = requestUrl.includes("/auth/me");
+      unauthorizedHandler(
+        isInitialHydration
+          ? ""
+          : "Your session has expired. Please sign in again."
+      );
     }
 
     return Promise.reject(error);
@@ -48,4 +54,3 @@ api.interceptors.response.use(
 );
 
 export default api;
-

@@ -1,0 +1,22 @@
+.not-found-page {
+  padding-top: 1.5rem;
+}
+
+.not-found-box {
+  max-width: 560px;
+  margin: 0 auto;
+  padding: 3.5rem 2rem;
+}
+
+.not-found-code {
+  font-size: 1rem;
+  padding: 0.35rem 1rem;
+}
+
+.not-found-box h1 {
+  margin: 0;
+  font-size: clamp(1.65rem, 3vw, 2.15rem);
+  font-weight: 800;
+  color: var(--text);
+}
+

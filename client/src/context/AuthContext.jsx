@@ -22,12 +22,14 @@ export function AuthProvider({ children }) {
   const [authLoading, setAuthLoading] = useState(() =>
     Boolean(localStorage.getItem(TOKEN_KEY))
   );
+  const [sessionMessage, setSessionMessage] = useState("");
 
-  const clearSession = useCallback(() => {
+  const clearSession = useCallback((message = "") => {
     localStorage.removeItem(TOKEN_KEY);
     setToken(null);
     setUser(null);
     setAuthLoading(false);
+    setSessionMessage(typeof message === "string" ? message : "");
   }, []);
 
   const persistSession = useCallback((nextToken, nextUser) => {
@@ -35,6 +37,11 @@ export function AuthProvider({ children }) {
     setToken(nextToken);
     setUser(nextUser);
     setAuthLoading(false);
+    setSessionMessage("");
+  }, []);
+
+  const clearSessionMessage = useCallback(() => {
+    setSessionMessage("");
   }, []);
 
   useEffect(() => {
@@ -105,11 +112,22 @@ export function AuthProvider({ children }) {
       user,
       isAuthenticated: Boolean(token && user),
       authLoading,
+      sessionMessage,
+      clearSessionMessage,
       login,
       register,
       logout,
     }),
-    [token, user, authLoading, login, register, logout]
+    [
+      token,
+      user,
+      authLoading,
+      sessionMessage,
+      clearSessionMessage,
+      login,
+      register,
+      logout,
+    ]
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
@@ -125,4 +143,3 @@ export function useAuth() {
   }
   return context;
 }
-

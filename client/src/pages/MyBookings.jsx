@@ -1,6 +1,8 @@
 import { useCallback, useEffect, useState } from "react";
+import { QRCodeSVG } from "qrcode.react";
 import { Link } from "react-router-dom";
 import { fetchMyBookings } from "../api/bookingsApi";
+import { BookingsListSkeleton } from "../components/LoadingSkeleton";
 import {
   formatDate,
   formatDateTime,
@@ -14,6 +16,7 @@ function BookingItem({ booking }) {
   const event = booking.event;
   const showImage = Boolean(event?.imageUrl) && !imageError;
   const isCancelled = booking.status === "cancelled";
+  const bookingId = String(booking._id);
 
   return (
     <article className="booking-item">
@@ -85,6 +88,26 @@ function BookingItem({ booking }) {
           )}
         </div>
       </div>
+
+      <div className={`booking-item-qr ${isCancelled ? "is-cancelled" : ""}`}>
+        <div className="booking-qr-frame">
+          <QRCodeSVG
+            value={bookingId}
+            size={96}
+            level="M"
+            marginSize={2}
+            bgColor="#ffffff"
+            fgColor="#0f172a"
+            title={`Booking QR code for ${bookingId}`}
+          />
+        </div>
+        <span className="booking-qr-label">
+          {isCancelled ? "Cancelled Ticket" : "Entry QR Pass"}
+        </span>
+        <code className="booking-qr-id" title={bookingId}>
+          {bookingId}
+        </code>
+      </div>
     </article>
   );
 }
@@ -115,17 +138,19 @@ export default function MyBookings() {
     <section className="bookings-page">
       <div className="bookings-header">
         <h1>My Bookings</h1>
-        <p>View your upcoming tickets and past booking confirmations.</p>
+        <p>
+          View your upcoming tickets, booking confirmations, and entry QR
+          passes.
+        </p>
       </div>
 
       {loading ? (
-        <div className="state-box" role="status" aria-live="polite">
-          <div className="spinner" aria-hidden="true" />
-          <p>Loading your bookings...</p>
-        </div>
+        <BookingsListSkeleton count={3} />
       ) : error ? (
         <div className="state-box">
-          <div className="alert alert-error">{error}</div>
+          <div className="alert alert-error" role="alert">
+            {error}
+          </div>
           <button
             type="button"
             className="btn btn-secondary"
@@ -155,4 +180,3 @@ export default function MyBookings() {
     </section>
   );
 }
-

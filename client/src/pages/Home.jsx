@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { fetchEvents } from "../api/eventsApi";
 import EventCard from "../components/EventCard";
+import { EventsGridSkeleton } from "../components/LoadingSkeleton";
 import { getErrorMessage } from "../utils/format";
 import "./Home.css";
 
@@ -11,10 +12,12 @@ export default function Home() {
   const [debouncedSearch, setDebouncedSearch] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("");
   const [loading, setLoading] = useState(true);
+  const [isRefreshing, setIsRefreshing] = useState(false);
   const [error, setError] = useState("");
   const [reloadKey, setReloadKey] = useState(0);
 
   const hasLoadedCategories = useRef(false);
+  const hasLoadedInitial = useRef(false);
 
   // Debounce search text so rapid typing does not spam the API
   useEffect(() => {
@@ -28,7 +31,11 @@ export default function Home() {
     let ignore = false;
 
     const loadEvents = async () => {
-      setLoading(true);
+      if (hasLoadedInitial.current) {
+        setIsRefreshing(true);
+      } else {
+        setLoading(true);
+      }
       setError("");
 
       try {
@@ -39,6 +46,7 @@ export default function Home() {
 
         if (ignore) return;
         setEvents(fetchedEvents);
+        hasLoadedInitial.current = true;
 
         // Preserve full category options from the unfiltered initial response
         if (
@@ -64,6 +72,7 @@ export default function Home() {
       } finally {
         if (!ignore) {
           setLoading(false);
+          setIsRefreshing(false);
         }
       }
     };
@@ -145,14 +154,19 @@ export default function Home() {
         </div>
       </div>
 
-      {loading ? (
-        <div className="state-box" role="status" aria-live="polite">
-          <div className="spinner" aria-hidden="true" />
-          <p>Loading events...</p>
+      {isRefreshing && (
+        <div className="home-refreshing" role="status" aria-live="polite">
+          Updating results...
         </div>
+      )}
+
+      {loading ? (
+        <EventsGridSkeleton count={6} />
       ) : error ? (
         <div className="state-box">
-          <div className="alert alert-error">{error}</div>
+          <div className="alert alert-error" role="alert">
+            {error}
+          </div>
           <button
             type="button"
             className="btn btn-secondary"
@@ -180,7 +194,10 @@ export default function Home() {
           )}
         </div>
       ) : (
-        <div className="events-grid">
+        <div
+          className={`events-grid ${isRefreshing ? "is-refreshing" : ""}`}
+          aria-busy={isRefreshing}
+        >
           {events.map((event) => (
             <EventCard key={event._id} event={event} />
           ))}
@@ -189,4 +206,3 @@ export default function Home() {
     </section>
   );
 }
-
