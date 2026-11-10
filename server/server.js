@@ -5,6 +5,8 @@ const cors = require("cors");
 const dotenv = require("dotenv");
 
 const authRoutes = require("./routes/authRoutes");
+const eventRoutes = require("./routes/eventRoutes");
+const bookingRoutes = require("./routes/bookingRoutes");
 
 // Load environment variables from server/.env
 dotenv.config({ path: path.join(__dirname, ".env") });
@@ -23,8 +25,10 @@ app.get("/api/health", (req, res) => {
   });
 });
 
-// Mount authentication routes
+// Mount API routes
 app.use("/api/auth", authRoutes);
+app.use("/api/events", eventRoutes);
+app.use("/api/bookings", bookingRoutes);
 
 // Handle invalid JSON bodies cleanly
 app.use((err, req, res, next) => {
